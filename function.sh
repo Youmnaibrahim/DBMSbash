@@ -96,9 +96,10 @@ function listdatabases() {
 dir=databases
 if [ "$(ls -A $dir)" ]; then
     ls $dir
-
+    return 0
 else 
     echo "$dir is empty"
+    return 1
 fi
 }
 
@@ -116,7 +117,7 @@ do
         . ./createtable.sh 
           ;;
         3)
-         . ./insertintotable.sh 
+         . ./insert.sh 
           ;;
         4) 
         . ./deletetable.sh
@@ -228,7 +229,7 @@ if [ $? -eq 0 ]; then
   fi
   done
 elif [ $? -eq 1 ]; then
-  backmenu
+  mainmenu
 fi
 }
 
@@ -259,8 +260,73 @@ function createcolumn(){
             echo "$cn;" >> $1 
             echo "database created succefully"
             break
-        elif (( $i < $coloumnumber )); then
+        elif (( $i < $coloumnumber)); then
             echo -e "$cn;" >> $1 
         fi 
     done
+}
+#--------------------------------------------------------------------------
+#insert function
+function insert(){
+
+  var='!@#$%^&*()'
+  listdatabases
+  if [ $? -eq 0 ]; then 
+  while true;
+  do 
+  read -p "enter your database you want to access " name
+  if [ -e databases/$name  ]; then
+    listt $name
+    break
+  else
+      echo "database doesnt exist"
+  fi
+  done
+  while true;
+  do 
+  read -p "enter your table want to access " table
+  if [ -e databases/$name/$table  ]; then
+    
+    break
+  else
+      echo "database doesnt exist"
+  fi
+  done
+  
+  for (( i = 1 ; i <= "$(cat databases/$name/.metadata/$table.meta | wc -l)" ; i++ )) 
+  do
+    while true;
+    do
+      read -p "enter your value " value
+      if [[ $value =~ [$var] ]];  then
+          echo " ERROR name of column can't have regex"
+
+      elif [[ -z "$value" ]];  then
+            echo "ERROR column can't be empty"
+          
+          
+      elif [[  $value = *" "* ]];  then
+          echo "ERROR column can't contain spaces" 
+      else 
+        break
+      fi
+      done
+      if (( $i == "$(cat databases/$name/.metadata/$table.meta | wc -l)" )); then
+            echo "$value" >> databases/$name/$table
+            echo "insert is done"
+            break
+      elif (( $i < "$(cat databases/$name/.metadata/$table.meta | wc -l)" )); then
+            echo -e "$value;\c" >>  databases/$name/$table
+      fi 
+
+  done
+
+  elif [ $? -eq 1 ]; then
+  mainmenu
+  fi
+}
+
+
+function listt(){
+ls databases/$1 
 }
