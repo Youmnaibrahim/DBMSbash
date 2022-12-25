@@ -40,14 +40,15 @@ echo "enter name of new Database name"
     read name 
         if  [ -d databases/$name ]; then
              echo "this database is aleady exist"
-    
+              createDB
         elif [[ $name =~ [$var] ]];  then
              echo "data base can't have regex"
-                
+              createDB
         else
              mkdir databases/$name
              mkdir databases/$name/.metadata
              echo database created sussesful 
+             mainmenu
         fi
 }
 #--------------------------------------------------------------
@@ -177,8 +178,10 @@ read -p "echo enter your database name " name
 if [ -n "$(ls -A databases/$name)" ]; then
         echo  "available tables"
          ls databases/$name
+         return 0
 else
     echo "no tables to show "
+    return 1
 fi
 }
 #-----------------------------------------------------
@@ -186,36 +189,61 @@ fi
 function taplenameconstrain(){
 var='!@#$%^&*()'
 listdatabases
-read -p "enter your database you want to access " name
-read -p "enter your table name " table
-if  [[  $table =~ [0-9]+$ ]]; then
-        echo " ERROR name of table can not contain number"
-        taplenameconstrain
-elif
-    [[ $table =~ [$var] ]];  then
-         echo " ERROR name of taple can't have regex"
-         taplenameconstrain
-elif
-    [[ -z "$table" ]];  then
-         echo "ERROR taple can't be empty"
-         taplenameconstrain
-elif 
-    [[  $table = *" "* ]];  then
-         echo "ERROR taple can't contain spaces"
-         taplenameconstrain
-else 
-    touch databases/$name/$table
-    touch databases/$name/.metadata/$table
-    createcolumn databases/$name/.metadata/$table
+if [ $? -eq 0 ]; then 
+  while true;
+  do 
+  read -p "enter your database you want to access " name
+  if [ -e databases/$name  ]; then
+    break
+  else
+      echo "database doesnt exist"
+  fi
+  done
+  while true;
+  do
+  read -p "enter your table name " table
+  if  [[  $table =~ [0-9]+$ ]]; then
+          echo " ERROR name of table can not contain number"
+          
+  elif
+      [[ $table =~ [$var] ]];  then
+          echo " ERROR name of taple can't have regex"
+          
+  elif
+      [[ -z "$table" ]];  then
+          echo "ERROR taple can't be empty"
+          
+  elif 
+      [[  $table = *" "* ]];  then
+          echo "ERROR taple can't contain spaces"
+  
+  else 
+      touch databases/$name/$table
+      touch databases/$name/.metadata/$table.meta
+      chmod 777 databases/$name/.metadata/$table.meta
+      chmod 777 databases/$name/$table
+      createcolumn databases/$name/.metadata/$table.meta
+      
+      mainmenu
+  fi
+  done
+elif [ $? -eq 1 ]; then
+  backmenu
 fi
-
 }
 
 function createcolumn(){
-   while true:
+  declare -i coloumnumber
+   while true;
    do
     read -p "enter the number of coloum " coloumnumber
     if [[ $coloumnumber =~ ^[0-9]+$ ]]; then
+      break
+    else
+        echo "column number cannot be empty or string"
+    fi
+    done
+
     for (( i = 1 ; i <= $coloumnumber ; i++ ))
     do
         while true;
@@ -227,17 +255,12 @@ function createcolumn(){
                 break
             fi
         done
-        if (( $i == $columnnumber )); then
-            echo "$cn" >> $1 
+        if (( $i == $coloumnumber)); then
+            echo "$cn;" >> $1 
             echo "database created succefully"
-            mainmenu
-        elif (( $i < $columnnumber )); then
+            break
+        elif (( $i < $coloumnumber )); then
             echo -e "$cn;" >> $1 
         fi 
-    else
-        echo "column number cannot be empty or string"
-    fi
-
     done
-
 }
