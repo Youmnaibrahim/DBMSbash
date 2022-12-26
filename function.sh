@@ -107,7 +107,7 @@ fi
 # this function for meni for tables
 function main_menu_table(){
 
-select choice in  "show tables" "create new table" "insert into table" "Delete table" "update table" "return to main menu"
+select choice in  "show tables" "create new table" "insert into table" "Delete table" "update table" " select from tables" "return to main menu"
 do
     case $REPLY in 
         1)
@@ -126,6 +126,9 @@ do
          . ./updatetable.sh
           ;; 
         6)
+         . ./selecttables.sh
+          ;;
+        7)
          . ./mainmenu.sh
     esac 
 done
@@ -329,4 +332,36 @@ function insert(){
 
 function listt(){
 ls databases/$1 
+}
+#-----------------------------------------------------------------------
+# this function for select databases 
+
+function selecttables(){
+ listdatabases
+  if [ $? -eq 0 ]; then 
+  while true;
+  do 
+  read -p "enter your database you want to access " name
+  if [ -e databases/$name  ]; then
+    listt $name
+    break
+  else
+      echo "database doesnt exist"
+  fi
+  done
+  while true;
+  do 
+  read -p "enter your table want to access " table
+  if [ -e databases/$name/$table  ]; then
+      cat databases/$name/$table 
+        
+    break
+  else
+      echo "database doesnt exist"
+  fi
+  done
+
+  elif [ $? -eq 1 ]; then
+  mainmenu
+  fi
 }
